@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Prediction App — Streamlit & IA</title>
+    
+    <!-- Google Fonts & Font Awesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-primary: #070d18;
+            --card-bg: rgba(15, 27, 49, 0.85);
+            --card-border: rgba(99, 140, 255, 0.15);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-blue: #0a74da;
+            --accent-cyan: #38bdf8;
+            --accent-emerald: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(10, 116, 218, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 75%, rgba(16, 185, 129, 0.08) 0%, transparent 40%);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-bottom: 5rem;
+        }
+
+        .container {
+            max-width: 1050px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Top Nav Bar */
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 2rem;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            background: rgba(56, 189, 248, 0.2);
+            color: #fff;
+            transform: translateX(-3px);
+        }
+
+        /* Header */
+        .app-title {
+            text-align: center;
+            font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #38bdf8;
+            margin-bottom: 0.75rem;
+        }
+
+        .app-subtitle {
+            text-align: center;
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            max-width: 60ch;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Streamlit Big Action Button */
+        .streamlit-hero-cta {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .btn-streamlit-main {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1.1rem 2.5rem;
+            background: linear-gradient(135deg, #0a74da 0%, #0284c7 50%, #2563eb 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            box-shadow: 0 8px 30px rgba(10, 116, 218, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-streamlit-main:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 35px rgba(10, 116, 218, 0.65);
+            color: #fff;
+        }
+
+        .streamlit-help-tip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fde68a;
+            padding: 0.6rem 1.25rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+
+        /* Predictor Card */
+        .interactive-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            backdrop-filter: blur(12px);
+            margin-bottom: 3rem;
+        }
+
+        .card-header-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .presets-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-preset {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            padding: 0.4rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-preset:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-preset.low { color: #6ee7b7; border-color: rgba(16, 185, 129, 0.3); }
+        .btn-preset.mid { color: #fcd34d; border-color: rgba(245, 158, 11, 0.3); }
+        .btn-preset.high { color: #fca5a5; border-color: rgba(239, 68, 68, 0.3); }
+
+        .predictor-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .form-val-display {
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .input-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(7, 13, 24, 0.8);
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .input-control:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gauge-svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .gauge-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.08);
+            stroke-width: 12;
+        }
+
+        .gauge-meter {
+            fill: none;
+            stroke: var(--accent-emerald);
+            stroke-width: 12;
+            stroke-linecap: round;
+            stroke-dasharray: 440;
+            stroke-dashoffset: 440;
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.5s ease;
+        }
+
+        .gauge-center {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .gauge-score {
+            font-size: 2.2rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .status-badge-lg {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.45rem 1.15rem;
+            border-radius: 9999px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .status-badge-lg.low {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+        }
+
+        .status-badge-lg.mid {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+        }
+
+        .status-badge-lg.high {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.35);
+        }
+
+        .result-box {
+            background: rgba(7, 13, 24, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .result-explanation {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            text-align: left;
+            margin-top: 1rem;
+            line-height: 1.6;
+        }
+
+        .result-explanation ul {
+            margin-left: 1.25rem;
+            margin-top: 0.4rem;
+        }
+
+        /* About Diabetes Section */
+        .info-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            backdrop-filter: blur(12px);
+        }
+
+        .info-card h2 {
+            font-size: 1.6rem;
+            color: #38bdf8;
+            margin-bottom: 1rem;
+        }
+
+        .info-card h3 {
+            font-size: 1.2rem;
+            color: #fff;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        .info-card p {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+
+        .info-card ol, .info-card ul {
+            margin-left: 1.5rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .info-card li {
+            margin-bottom: 0.5rem;
+        }
+
+        .site-footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 850px) {
+            .predictor-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .btn-streamlit-main {
+                width: 100%;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <a href="index.html" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> ← Retour au Portfolio
+        </a>
+        <div style="font-size:0.9rem; color:var(--text-muted);">
+            Projet Machine Learning & Santé
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <div class="app-title">💉 Diabetes Prediction App 💉</div>
+    <div class="app-subtitle">
+        Harness the power of machine learning to predict diabetes and provide insights!
+    </div>
+
+    <!-- Streamlit Main CTA Button -->
+    <div class="streamlit-hero-cta">
+        <a class="btn-streamlit-main" href="https://app-project-yww85ma7kyfsynpsghzrha.streamlit.app/" target="_blank" rel="noopener noreferrer">
+            <i class="fa-solid fa-bolt"></i> Streamlit Application Link
+        </a>
+        <div>
+            <div class="streamlit-help-tip">
+                <i class="fa-solid fa-circle-info"></i> 
+                <span>Si l'application est en veille sur Streamlit Cloud, cliquez sur <strong>"Yes, get this app back up!"</strong> pour la réveiller en 30s.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Predictor Card (Direct Preview) -->
+    <section class="interactive-card">
+        <div class="card-header-flex">
+            <div>
+                <h2 style="font-size:1.35rem; color:#fff;">
+                    <i class="fa-solid fa-calculator" style="color:var(--accent-cyan);"></i> Simulateur Prédictif Instantané
+                </h2>
+                <p style="font-size:0.9rem; color:var(--text-muted);">
+                    Testez les prédictions en direct dans votre navigateur sans attendre le chargement de Streamlit.
+                </p>
+            </div>
+            <div class="presets-buttons">
+                <button type="button" class="btn-preset low" onclick="loadPreset('low')">Sain</button>
+                <button type="button" class="btn-preset mid" onclick="loadPreset('mid')">Modéré</button>
+                <button type="button" class="btn-preset high" onclick="loadPreset('high')">Critique</button>
+            </div>
+        </div>
+
+        <div class="predictor-grid">
+            <!-- Form Input -->
+            <form id="calcForm" onsubmit="event.preventDefault(); calculatePrediction();">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label class="form-label" for="glucose">
+                            <span>Glucose sanguin (à jeun)</span>
+                            <span class="form-val-display" id="glucoseVal">120 mg/dL</span>
+                        </label>
+                        <input type="range" id="glucose" class="input-control" min="50" max="250" value="120" 
+                               oninput="document.getElementById('glucoseVal').textContent = this.value + ' mg/dL'; calculatePrediction();">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="bmi">
+                            <span>Indice IMC</span>
+                            <span class="form-val-display" id="bmiVal">26.5</span>
+                        </label>
+                        <input type="number" id="bmi" step="0.1" class="input-control" value="26.5" min="15" max="60" oninput="calculatePrediction();">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="age">
+                            <span>Âge (ans)</span>
+                            <span class="form-val-display" id="ageVal">35</span>
+                        </label>
+                        <input type="number" id="age" class="input-control" value="35" min="15" max="100" oninput="calculatePrediction();">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="bp">
+                            <span>Tension artérielle</span>
+                        </label>
+                        <input type="number" id="bp" class="input-control" value="75" min="40" max="140" oninput="calculatePrediction();">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="insulin">
+                            <span>Insuline (µU/ml)</span>
+                        </label>
+                        <input type="number" id="insulin" class="input-control" value="85" min="0" max="400" oninput="calculatePrediction();">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="pregnancies">
+                            <span>Grossesses</span>
+                        </label>
+                        <input type="number" id="pregnancies" class="input-control" value="1" min="0" max="15" oninput="calculatePrediction();">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="pedigree">
+                            <span>Pedigree (Hérédité)</span>
+                        </label>
+                        <input type="number" id="pedigree" step="0.05" class="input-control" value="0.38" min="0.05" max="2.5" oninput="calculatePrediction();">
+                    </div>
+                </div>
+            </form>
+
+            <!-- Results Output -->
+            <div class="result-box">
+                <div class="gauge-container">
+                    <svg class="gauge-svg" viewBox="0 0 160 160">
+                        <circle class="gauge-bg" cx="80" cy="80" r="70"></circle>
+                        <circle class="gauge-meter" id="gaugeMeter" cx="80" cy="80" r="70"></circle>
+                    </svg>
+                    <div class="gauge-center">
+                        <div class="gauge-score" id="riskPercent">28%</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">Probabilité</div>
+                    </div>
+                </div>
+
+                <div id="riskBadge" class="status-badge-lg low">
+                    <i class="fa-solid fa-circle-check"></i> Risque Faible
+                </div>
+
+                <div class="result-explanation" id="riskDetails">
+                    <strong>Facteurs d'analyse :</strong>
+                    <ul id="riskFactors">
+                        <li>Glycémie dans la norme acceptable.</li>
+                        <li>Poids de forme modéré.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Original Scientific & Educational Content -->
+    <section class="info-card">
+        <h2>What is diabetes?</h2>
+        <p><strong>Diabetes</strong> is a chronic health condition that affects how your body turns food into energy. It is characterized by high levels of glucose (sugar) in the blood, which occurs because the body either doesn’t produce enough insulin, doesn’t use insulin effectively, or both.</p>
+
+        <h3>Types of Diabetes:</h3>
+        <ol>
+            <li><strong>Type 1 Diabetes</strong>:
+                <ul>
+                    <li>An autoimmune condition where the immune system attacks and destroys insulin-producing cells in the pancreas.</li>
+                    <li>Typically diagnosed in children and young adults.</li>
+                    <li>Requires daily insulin injections.</li>
+                </ul>
+            </li>   
+            <li><strong>Type 2 Diabetes</strong>:
+                <ul>
+                    <li>The body becomes resistant to insulin, or the pancreas doesn’t produce enough.</li>
+                    <li>Often linked to lifestyle and genetics.</li>
+                    <li>Managed through lifestyle changes, medications, and sometimes insulin.</li>
+                </ul>
+            </li>
+            <li><strong>Gestational Diabetes</strong>:
+                <ul>
+                    <li>Occurs during pregnancy.</li>
+                    <li>Usually resolves after childbirth.</li>
+                    <li>Increases the risk of type 2 diabetes later.</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>Symptoms of Diabetes:</h3>
+        <ul>
+            <li>Frequent urination</li>
+            <li>Excessive thirst</li>
+            <li>Extreme hunger</li>
+            <li>Fatigue</li>
+            <li>Blurred vision</li>
+            <li>Slow-healing wounds</li>
+            <li>Unexplained weight loss</li>
+        </ul>
+
+        <h3>Complications:</h3>
+        <ul>
+            <li>Heart disease</li>
+            <li>Kidney damage</li>
+            <li>Vision loss</li>
+            <li>Nerve damage</li>
+            <li>Infections</li>
+        </ul>
+
+        <h3>Management:</h3>
+        <ul>
+            <li><strong>Diet</strong>: Balanced meals, low sugar</li>
+            <li><strong>Exercise</strong>: Regular physical activity</li>
+            <li><strong>Medications</strong>: Insulin or oral drugs</li>
+            <li><strong>Monitoring</strong>: Blood glucose checks</li>
+        </ul>
+    </section>
+
+    <footer class="site-footer">
+        © 2026 Diabetes Prediction App | Cheraga Abd El Mounaim
+    </footer>
+</div>
+
+<script>
+    function calculateProbability(p, g, bp, ins, bmi, ped, age) {
+        let z = -5.8;
+        z += (g * 0.035);
+        z += (bmi * 0.082);
+        z += (age * 0.024);
+        z += (ped * 0.95);
+        z += (p * 0.12);
+        z += (bp > 80 ? (bp - 80) * 0.015 : 0);
+        z += (ins > 140 ? (ins - 140) * 0.004 : 0);
+
+        let probability = 1 / (1 + Math.exp(-z));
+        let percent = Math.round(probability * 100);
+        return Math.max(3, Math.min(98, percent));
+    }
+
+    function calculatePrediction() {
+        const glucose = parseFloat(document.getElementById('glucose').value) || 120;
+        const bmi = parseFloat(document.getElementById('bmi').value) || 25;
+        const age = parseFloat(document.getElementById('age').value) || 30;
+        const bp = parseFloat(document.getElementById('bp').value) || 75;
+        const insulin = parseFloat(document.getElementById('insulin').value) || 80;
+        const pregnancies = parseFloat(document.getElementById('pregnancies').value) || 0;
+        const pedigree = parseFloat(document.getElementById('pedigree').value) || 0.35;
+
+        const risk = calculateProbability(pregnancies, glucose, bp, insulin, bmi, pedigree, age);
+
+        const riskPercentEl = document.getElementById('riskPercent');
+        const gaugeMeter = document.getElementById('gaugeMeter');
+        const riskBadge = document.getElementById('riskBadge');
+        const riskFactors = document.getElementById('riskFactors');
+
+        riskPercentEl.textContent = risk + '%';
+
+        const circumference = 440;
+        const offset = circumference - (circumference * risk) / 100;
+        gaugeMeter.style.strokeDashoffset = offset;
+
+        let factorsHtml = '';
+
+        if (risk < 35) {
+            gaugeMeter.style.stroke = '#10b981';
+            riskBadge.className = 'status-badge-lg low';
+            riskBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i> Risque Faible (' + risk + '%)';
+            factorsHtml += '<li>Glycémie globale bien équilibrée (< 126 mg/dL).</li>';
+            if (bmi < 25) factorsHtml += '<li>Poids santé favorable (IMC < 25).</li>';
+            factorsHtml += '<li>Poursuivez un mode de vie sain avec activité physique régulière.</li>';
+        } else if (risk < 65) {
+            gaugeMeter.style.stroke = '#f59e0b';
+            riskBadge.className = 'status-badge-lg mid';
+            riskBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Risque Modéré (' + risk + '%)';
+            if (glucose >= 100) factorsHtml += '<li>Glycémie à surveiller (signes de pré-diabète ou glycémie limite).</li>';
+            if (bmi >= 25) factorsHtml += '<li>Surpoids détecté (IMC = ' + bmi + '). Un rééquilibrage nutritionnel est recommandé.</li>';
+            if (pedigree > 0.5) factorsHtml += '<li>Facteur héréditaire présent dans les antécédents.</li>';
+            factorsHtml += '<li>Un bilan sanguin de contrôle (HbA1c) est recommandé.</li>';
+        } else {
+            gaugeMeter.style.stroke = '#ef4444';
+            riskBadge.className = 'status-badge-lg high';
+            riskBadge.innerHTML = '<i class="fa-solid fa-heart-pulse"></i> Risque Élevé (' + risk + '%)';
+            if (glucose >= 126) factorsHtml += '<li style="color:#f87171;">Glycémie critique (≥ 126 mg/dL) nécessitant une confirmation médicale.</li>';
+            if (bmi >= 30) factorsHtml += '<li style="color:#f87171;">Obésité significative représentant un facteur de risque majeur.</li>';
+            factorsHtml += '<li>Consultation médicale préventive fortement recommandée pour diagnostic approfondi.</li>';
+        }
+
+        riskFactors.innerHTML = factorsHtml;
+    }
+
+    function loadPreset(type) {
+        if (type === 'low') {
+            document.getElementById('glucose').value = 88;
+            document.getElementById('glucoseVal').textContent = '88 mg/dL';
+            document.getElementById('bmi').value = 21.8;
+            document.getElementById('age').value = 24;
+            document.getElementById('bp').value = 68;
+            document.getElementById('insulin').value = 65;
+            document.getElementById('pregnancies').value = 0;
+            document.getElementById('pedigree').value = 0.22;
+        } else if (type === 'mid') {
+            document.getElementById('glucose').value = 118;
+            document.getElementById('glucoseVal').textContent = '118 mg/dL';
+            document.getElementById('bmi').value = 28.4;
+            document.getElementById('age').value = 46;
+            document.getElementById('bp').value = 82;
+            document.getElementById('insulin').value = 110;
+            document.getElementById('pregnancies').value = 2;
+            document.getElementById('pedigree').value = 0.45;
+        } else if (type === 'high') {
+            document.getElementById('glucose').value = 168;
+            document.getElementById('glucoseVal').textContent = '168 mg/dL';
+            document.getElementById('bmi').value = 35.2;
+            document.getElementById('age').value = 54;
+            document.getElementById('bp').value = 92;
+            document.getElementById('insulin').value = 220;
+            document.getElementById('pregnancies').value = 4;
+            document.getElementById('pedigree').value = 0.95;
+        }
+        calculatePrediction();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        calculatePrediction();
+    });
+</script>
+
+</body>
+</html>
